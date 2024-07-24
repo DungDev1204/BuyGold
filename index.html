@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Đăng Ký</title>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group input[readonly] {
+            background-color: #e9ecef;
+        }
+        .captcha-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .captcha {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            font-size: 24px;
+            color: white;
+            background: linear-gradient(45deg, #ff6a00, #ee0979);
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .refresh-captcha {
+            cursor: pointer;
+            font-size: 24px;
+        }
+        button {
+            background-color: #900;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #700;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form action="#" method="POST">
+            <div class="timer" id="timer">00:00:00</div>
+            <div class="form-group">
+                <label for="name">Họ và tên *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="birthDate">Ngày sinh *</label>
+                <input type="text" id="birthDate" name="birthdate" required readonly>
+            </div>
+            <div class="form-group">
+                <label for="address">Địa chỉ *</label>
+                <input type="text" id="address" name="address" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Địa chỉ email *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Số điện thoại *</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="id_number">Căn cước công dân/CMND/Hộ chiếu *</label>
+                <input type="text" id="id_number" name="id_number" required>
+            </div>
+            <div class="form-group">
+                <label for="issueDate">Ngày cấp *</label>
+                <input type="text" id="issueDate" name="issue_date" required readonly>
+            </div>
+            <div class="form-group">
+                <label for="issue_place">Nơi cấp *</label>
+                <input type="text" id="issue_place" name="issue_place" required>
+            </div>
+            <div class="form-group">
+                <label for="nationality">Quốc tịch *</label>
+                <input type="text" id="nationality" name="nationality" value="Việt Nam" readonly required>
+            </div>
+            <div class="form-group">
+                <label for="captcha">Mã Captcha *</label>
+                <div class="captcha-container">
+                    <div class="captcha" id="captcha"></div>
+                    <span class="refresh-captcha" onclick="refreshCaptcha()">&#x21bb;</span>
+                </div>
+                <input type="text" id="captcha_input" name="captcha_input" required>
+            </div>
+            <button type="submit">Đăng ký</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(document).ready(function() {
+            function generateCaptcha() {
+                const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                let result = '';
+                for (let i = 0; i < 6; i++) {
+                    result += characters.charAt(Math.floor(Math.random() * characters.length));
+                }
+                return result;
+            }
+
+            function refreshCaptcha() {
+                document.getElementById('captcha').innerText = generateCaptcha();
+            }
+
+            function adjustDatePicker(inst) {
+                setTimeout(function() {
+                    inst.dpDiv.css({
+                        top: $(inst.input).offset().top + $(inst.input).outerHeight(),
+                        left: $(inst.input).offset().left
+                    });
+                }, 0);
+            }
+
+            function handleDateChange(dateText, inst) {
+                if ($(this).data('datepicker').inline) {
+                    $(this).datepicker('setDate', new Date(inst.selectedYear, inst.selectedMonth, inst.selectedDay));
+                }
+            }
+
+            function handleBeforeShow(input, inst) {
+                adjustDatePicker(inst);
+            }
+
+            $("#birthDate, #issueDate").datepicker({
+                changeYear: true,
+                changeMonth: true,
+                dateFormat: "yy-mm-dd",
+                yearRange: "1900:2024",
+                showButtonPanel: true,
+                onClose: handleDateChange,
+                beforeShow: handleBeforeShow
+            }).attr('readonly', 'readonly');
+
+            refreshCaptcha();
+
+            var startTime = new Date().getTime();
+    var timerInterval = setInterval(updateTimer, 1000);
+    var reloadTriggered = false;
+
+    function updateTimer() {
+        var now = new Date().getTime();
+        var elapsedTime = now - startTime;
+
+        var hours = Math.floor(elapsedTime / (1000 * 60 * 60));
+        var minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+
+        hours = hours < 10 ? "0" + hours : hours;
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        $("#timer").text(hours + ":" + minutes + ":" + seconds);
+
+        // Kiểm tra nếu đã trôi qua 41 giây (41000 miligiây)
+        if (elapsedTime >= 41000 && !reloadTriggered) {
+            clearInterval(timerInterval); // Dừng đồng hồ bấm giờ
+            reloadTriggered = true; // Đánh dấu rằng đã kích hoạt reload
+
+            setTimeout(function() {
+                location.reload(); // Reload trang sau 1 giây
+            }, 1000);
+        }
+    }
+        });
+    </script>
+</body>
+</html>
