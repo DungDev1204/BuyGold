@@ -29,7 +29,8 @@
             margin-bottom: 5px;
             font-weight: bold;
         }
-        .form-group input {
+        .form-group input,
+        .form-group textarea {
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -69,13 +70,21 @@
         button:hover {
             background-color: #700;
         }
+        .form-group.checkbox {
+            flex-direction: row;
+            align-items: center;
+        }
+        .form-group.checkbox input {
+            margin-right: 10px;
+            width: auto;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <form action="#" method="POST">
-            <div class="timer" id="timer">00:00:00</div>
+        <form action="#" method="POST" onsubmit="return validateForm()">
             <div class="form-group">
+                <div class="timer" id="timer">00:00:00</div>
                 <label for="name">Họ và tên *</label>
                 <input type="text" id="name" name="name" required>
             </div>
@@ -118,6 +127,10 @@
                     <span class="refresh-captcha" onclick="refreshCaptcha()">&#x21bb;</span>
                 </div>
                 <input type="text" id="captcha_input" name="captcha_input" required>
+            </div>
+            <div class="form-group checkbox">
+                <input type="checkbox" id="terms" name="terms" required>
+                <label for="terms">Tôi đồng ý với <a href="#">Điều khoản và Điều kiện</a></label>
             </div>
             <button type="submit">Đăng ký</button>
         </form>
@@ -170,36 +183,48 @@
             }).attr('readonly', 'readonly');
 
             refreshCaptcha();
-
             var startTime = new Date().getTime();
-    var timerInterval = setInterval(updateTimer, 1000);
-    var reloadTriggered = false;
+            var timerInterval = setInterval(updateTimer, 1000);
+            var reloadTriggered = false;
 
-    function updateTimer() {
-        var now = new Date().getTime();
-        var elapsedTime = now - startTime;
+            function updateTimer() {
+                var now = new Date().getTime();
+                var elapsedTime = now - startTime;
 
-        var hours = Math.floor(elapsedTime / (1000 * 60 * 60));
-        var minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
-        var seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+                var hours = Math.floor(elapsedTime / (1000 * 60 * 60));
+                var minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+                var seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
 
-        hours = hours < 10 ? "0" + hours : hours;
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
+                hours = hours < 10 ? "0" + hours : hours;
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
 
-        $("#timer").text(hours + ":" + minutes + ":" + seconds);
+                $("#timer").text(hours + ":" + minutes + ":" + seconds);
 
-        // Kiểm tra nếu đã trôi qua 41 giây (41000 miligiây)
-        if (elapsedTime >= 41000 && !reloadTriggered) {
-            clearInterval(timerInterval); // Dừng đồng hồ bấm giờ
-            reloadTriggered = true; // Đánh dấu rằng đã kích hoạt reload
+                // Kiểm tra nếu đã trôi qua 41 giây (41000 miligiây)
+                if (elapsedTime >= 40000 && !reloadTriggered) {
+                    clearInterval(timerInterval); // Dừng đồng hồ bấm giờ
+                    reloadTriggered = true; // Đánh dấu rằng đã kích hoạt reload
 
-            setTimeout(function() {
-                location.reload(); // Reload trang sau 1 giây
-            }, 1000);
-        }
-    }
+                    setTimeout(function() {
+                        location.reload(); // Reload trang sau 1 giây
+                    }, 1000);
+                }
+            }
         });
+
+        function validateForm() {
+            const termsCheckbox = document.getElementById('terms');
+            if (!termsCheckbox.checked) {
+                alert('Bạn phải đồng ý với Điều khoản và Điều kiện.');
+                return false;
+            }
+            alert('Đăng ký thành công!');
+            setTimeout(function() {
+                window.location.reload();
+            }, 1000);
+            return false; // Prevent form submission for demonstration
+        }
     </script>
 </body>
 </html>
